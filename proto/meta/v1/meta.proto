@@ -2,90 +2,83 @@ syntax = "proto3";
 
 package meta.v1;
 
+option go_package = "github.com/jahjah/edge-sight-go-sdk;metav1";
 
 service MetaService {
-    // 用户
-    rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+  // 用户
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
 
-    // 病区一览
-    rpc GetBeds(GetBedsRequest) returns (GetBedsResponse) {}
-    rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse) {}
+  // 病区一览
+  rpc GetBeds(GetBedsRequest) returns (GetBedsResponse) {}
+  rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse) {}
 
-    // 输液管理
-    rpc GetInfusionDevices(GetInfusionDevicesRequest) returns (GetInfusionDevicesResponse) {}
+  // 输液管理
+  rpc GetInfusionDevices(GetInfusionDevicesRequest)
+      returns (GetInfusionDevicesResponse) {}
 }
 
 message GetBedsRequest {
-    int32 page = 1;
-    int32 pageSize = 2;
-    int32 deptId = 3;
+  int32 page = 1;
+  int32 pageSize = 2;
+  int32 deptId = 3;
 }
 
-message GetBedsResponse {
-    repeated BedDetail beds = 1;
-}
+message GetBedsResponse { repeated BedDetail beds = 1; }
 
 message BedDetail {
-    int32 bedId = 1;
-    string bedNo = 2;
-    string patientName = 3;
-    string patientGender = 4;
-    int32 patientAge = 5;
-    string disease = 6;
-    string status = 7;
+  int32 bedId = 1;
+  string bedNo = 2;
+  string patientName = 3;
+  string patientGender = 4;
+  int32 patientAge = 5;
+  string disease = 6;
+  string status = 7;
 }
 
 message GetAlertsRequest {
-    int32 page = 1;
-    int32 pageSize = 2;
-    int32 deptId = 3;
+  int32 page = 1;
+  int32 pageSize = 2;
+  int32 deptId = 3;
 }
 
-message GetAlertsResponse {
-    repeated AlertDetail alerts = 1;
-}
+message GetAlertsResponse { repeated AlertDetail alerts = 1; }
 
 message AlertDetail {
-    int32 alertId = 1;
-    string bedNo = 2;
-    string alertType = 3;
-    string alertTime = 4;
+  int32 alertId = 1;
+  string bedNo = 2;
+  string alertType = 3;
+  string alertTime = 4;
 }
 
-
 message GetInfusionDevicesRequest {
-    int32 page = 1;
-    int32 pageSize = 2;
-    int32 deptId = 3;
+  int32 page = 1;
+  int32 pageSize = 2;
+  int32 deptId = 3;
 }
 
 message GetInfusionDevicesResponse {
-    repeated InfusionDeviceDetail infusionDevices = 1;
+  repeated InfusionDeviceDetail infusionDevices = 1;
 }
 
 message InfusionDeviceDetail {
-    string bedNo = 1;
-    repeated DrugDetail drugs = 2;
-    string disease = 3;
-    string infusionTime = 4;
-    string infusionStatus = 5;
+  string bedNo = 1;
+  repeated DrugDetail drugs = 2;
+  string disease = 3;
+  string infusionTime = 4;
+  string infusionStatus = 5;
 }
 
 message DrugDetail {
-    int32 drugId = 1;
-    string drugName = 2;
+  int32 drugId = 1;
+  string drugName = 2;
 }
 
-message GetUserRequest {
-    int32 userId = 1;
-}
+message GetUserRequest { int32 userId = 1; }
 
-message GetUserResponse {
-    UserDetail user = 1;
-}
+message GetUserResponse { UserDetail user = 1; }
 
 message UserDetail {
-    int32 userId = 1;
-    string userName = 2;
-    string userRole = 3;
+  int32 userId = 1;
+  string userName = 2;
+  string userRole = 3;
 }
