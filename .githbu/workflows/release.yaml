@@ -1,0 +1,60 @@
+name: Release Private SDKs
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  generate-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout API Repo
+        uses: actions/checkout@v4
+
+      - name: Extract Version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Install Buf
+        run: |
+          curl -sSL https://github.com/bufbuild/buf/releases/latest/download/buf-$(uname -s)-$(uname -m) -o /usr/local/bin/buf
+          chmod +x /usr/local/bin/buf
+
+      - name: Install Plugins
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          npm install -g @bufbuild/protoc-gen-es @bufbuild/protoc-gen-connect-es
+
+      - name: Generate SDKs
+        run: buf generate
+
+      - name: Push Go SDK
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/your-org/go-sdk.git
+          cp -r gen/go/* go-sdk/
+          cd go-sdk
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Sync Go SDK v$VERSION" || echo "No changes"
+          git tag v$VERSION || echo "tag exists"
+          git push origin main --tags
+
+      - name: Push Node.js SDK
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/your-org/node-sdk.git
+          cp -r gen/node/* node-sdk/
+          cd node-sdk
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          npm version $VERSION --no-git-tag-version
+          git add .
+          git commit -m "Sync Node.js SDK v$VERSION" || echo "No changes"
+          git tag v$VERSION || echo "tag exists"
+          git push origin main --tags
+          npm publish --registry=https://npm.pkg.github.com
