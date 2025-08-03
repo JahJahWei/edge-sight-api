@@ -38,7 +38,8 @@ jobs:
         run: |
           echo "Pushing Java SDK"
           VERSION=${{ steps.version.outputs.version }}
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/jahjahWei/meta-api-sdk.git
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk.git
+          
           cp -r gen/meta-api-sdk/* meta-api-sdk/
           cd meta-api-sdk
           git config user.name github-actions
