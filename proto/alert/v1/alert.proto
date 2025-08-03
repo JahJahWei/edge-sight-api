@@ -1,0 +1,17 @@
+syntax = "proto3"
+
+package alert.v1;
+
+service AlertService {
+    rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse) {}
+}
+
+message GetAlertsRequest {
+    int32 page = 1;
+    int32 pageSize = 2;
+    int32 deptId = 3;
+}
+
+message GetAlertsResponse {
+    int32 id = 1;
+}
