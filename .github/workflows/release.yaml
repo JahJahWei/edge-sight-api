@@ -39,6 +39,9 @@ jobs:
           distribution: "temurin"
 
       - name: Push Java SDK
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: |
           echo "Pushing Java SDK"
           VERSION=${{ steps.version.outputs.version }}
@@ -64,5 +67,9 @@ jobs:
           else
             git push origin master --tags
           fi
+
+          # Set environment variables for Maven authentication
+          export GH_TOKEN=${{ secrets.GH_TOKEN }}
+          export GITHUB_ACTOR=${{ github.actor }}
 
           mvn clean deploy -DskipTests -s settings.xml
