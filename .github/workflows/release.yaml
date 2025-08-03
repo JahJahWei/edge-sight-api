@@ -44,12 +44,6 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-          if [ ! -f pom.xml ]; then
-            echo "Error: pom.xml not found. Please create a pom.xml file in the meta-api-sdk repository."
-            exit 1
-          fi
-
-          sed -i "s/<version>.*<\/version>/<version>$VERSION<\/version>/" pom.xml
           git add .
 
           if git rev-parse --verify HEAD >/dev/null 2>&1; then
