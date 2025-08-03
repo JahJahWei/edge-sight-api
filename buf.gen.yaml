@@ -2,19 +2,10 @@ version: v2
 managed:
   enabled: true
 plugins:
-  # Go Code Generation
-  - remote: buf.build/protocolbuffers/go
-    out: gen/edge-sight-go-sdk # 将 Go 代码输出到 go-sdk/gen
-    opt: paths=source_relative
+  # Java Code Generation
+  - remote: buf.build/protocolbuffers/java
+    out: gen/meta-api-sdk
 
-  # Go gRPC Code Generation (如果你的proto文件有gRPC服务)
-  - remote: buf.build/grpc/go
-    out: gen/edge-sight-go-sdk # 将 Go gRPC 代码输出到 go-sdk/gen
-    opt:
-      - paths=source_relative
-      - require_unimplemented_servers=false
-
-  # Node.js/TypeScript Code Generation (使用 Protobuf-ES)
-  - remote: buf.build/bufbuild/es:v1.10.0
-    out: gen/edge-sight-node-sdk # 将 Node.js/TS 代码输出到 js-sdk/src
-    opt: target=ts
+  # Java gRPC Code Generation
+  - remote: buf.build/grpc/java
+    out: gen/meta-api-sdk
