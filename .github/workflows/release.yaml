@@ -5,6 +5,10 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   generate-and-publish:
     runs-on: ubuntu-latest
@@ -39,7 +43,7 @@ jobs:
           echo "Pushing Java SDK"
           VERSION=${{ steps.version.outputs.version }}
           git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk.git
-          
+
           cp -r gen/meta-api-sdk/* meta-api-sdk/
           cd meta-api-sdk
           git config user.name github-actions
@@ -60,5 +64,5 @@ jobs:
           else
             git push origin master --tags
           fi
-          
+
           mvn clean deploy -DskipTests -s settings.xml
