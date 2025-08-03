@@ -43,16 +43,27 @@ jobs:
           cd meta-api-sdk
           git config user.name github-actions
           git config user.email github-actions@github.com
-          # 检查 pom.xml 是否存在
+
           if [ ! -f pom.xml ]; then
             echo "Error: pom.xml not found. Please create a pom.xml file in the meta-api-sdk repository."
             exit 1
           fi
-          # 更新 pom.xml 中的版本号
+
           sed -i "s/<version>.*<\/version>/<version>$VERSION<\/version>/" pom.xml
           git add .
-          git commit -m "Sync Java SDK v$VERSION" || echo "No changes"
+
+          if git rev-parse --verify HEAD >/dev/null 2>&1; then
+            git commit -m "Sync Java SDK v$VERSION" || echo "No changes"
+          else
+            git commit -m "Initial commit: Sync Java SDK v$VERSION"
+          fi
+
           git tag v$VERSION || echo "tag exists"
-          git push origin main --tags
-          # 发布到 Maven 仓库
+
+          if ! git show-ref --verify --quiet refs/remotes/origin/master; then
+            git push origin HEAD:master --tags
+          else
+            git push origin master --tags
+          fi
+          
           mvn clean deploy -DskipTests -s settings.xml
