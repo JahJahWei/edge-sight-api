@@ -69,7 +69,7 @@ jobs:
           git config user.email github-actions@github.com
 
           # Copy generated files
-          cp -r meta/gen/meta-api-sdk-java/* .
+          cp -r ../meta/gen/meta-api-sdk-java/* .
 
           # Add all files
           git add .
@@ -117,7 +117,7 @@ jobs:
           git config user.email github-actions@github.com
 
           # Copy generated files
-          cp -r /meta/gen/meta-api-sdk-go/* .
+          cp -r ../meta/gen/meta-api-sdk-go/* .
 
           # Create go.mod if it doesn't exist
           if [ ! -f go.mod ]; then
