@@ -59,7 +59,7 @@ jobs:
           VERSION=${{ steps.version.outputs.version }}
           git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk.git
 
-          cp -r gen/meta-api-sdk-java/* meta-api-sdk-java/
+          cp -r meta/gen/meta-api-sdk-java/* meta-api-sdk-java/
           cd meta-api-sdk-java
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -95,7 +95,7 @@ jobs:
           VERSION=${{ steps.version.outputs.version }}
           git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-go.git
 
-          cp -r gen/meta-api-sdk-go/* meta-api-sdk-go/
+          cp -r meta/gen/meta-api-sdk-go/* meta-api-sdk-go/
           cd meta-api-sdk-go
           git config user.name github-actions
           git config user.email github-actions@github.com
