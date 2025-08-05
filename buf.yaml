@@ -2,10 +2,10 @@ version: v2
 
 modules:
   - path: proto/meta
-    name: meta
+    name: github.com/jahjah/meta
   
   - path: proto/alert
-    name: alert
+    name: github.com/jahjah/alert
 
 breaking:
   use:

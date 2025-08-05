@@ -1,33 +1,31 @@
-syntax = "proto3"
+syntax = "proto3";
 
 package alert.v1;
 
 service AlertService {
-    rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse) {}
-    rpc AlertCount(AlertCountRequest) returns (AlertCountResponse) {}
+  rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse) {}
+  rpc AlertCount(AlertCountRequest) returns (AlertCountResponse) {}
 }
 
 message GetAlertsRequest {
-    int32 page = 1;
-    int32 pageSize = 2;
-    int32 deptId = 3;
-    optional string status = 4;
-    optional string deviceNo = 5;
+  int32 page = 1;
+  int32 pageSize = 2;
+  int32 deptId = 3;
+  optional string status = 4;
+  optional string deviceNo = 5;
 }
 
 message GetAlertsResponse {
-    int32 id = 1;
-    string name = 2;
-    string status = 3;
-    string deviceNo = 4;
-    string createdAt = 5;
+  int32 id = 1;
+  string name = 2;
+  string status = 3;
+  string deviceNo = 4;
+  string createdAt = 5;
 }
 
 message AlertCountRequest {
-    int32 deptId = 1;
-    optional string status = 2;
+  int32 deptId = 1;
+  optional string status = 2;
 }
 
-message AlertCountResponse {
-    int32 count = 1;
-}
+message AlertCountResponse { int32 count = 1; }
