@@ -74,10 +74,17 @@ jobs:
 
           git tag v$VERSION || echo "tag exists"
 
+          # Handle push with proper merge strategy
           if ! git show-ref --verify --quiet refs/remotes/origin/master; then
+            # No remote master branch, push to create it
             git push origin HEAD:master --tags
           else
-            git push origin master --tags
+            # Remote master exists, try to push with merge
+            git pull origin master --allow-unrelated-histories || echo "Pull failed, continuing with push"
+            git push origin master --tags || {
+              echo "Push failed, trying force push"
+              git push origin master --tags --force
+            }
           fi
 
           # Set environment variables for Maven authentication
@@ -135,10 +142,17 @@ jobs:
 
           git tag v$VERSION || echo "tag exists"
 
+          # Handle push with proper merge strategy
           if ! git show-ref --verify --quiet refs/remotes/origin/master; then
+            # No remote master branch, push to create it
             git push origin HEAD:master --tags
           else
-            git push origin master --tags
+            # Remote master exists, try to push with merge
+            git pull origin master --allow-unrelated-histories || echo "Pull failed, continuing with push"
+            git push origin master --tags || {
+              echo "Push failed, trying force push"
+              git push origin master --tags --force
+            }
           fi
 
           # Set up Go module for publishing
