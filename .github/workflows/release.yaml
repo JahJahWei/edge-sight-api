@@ -56,36 +56,43 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
         run: |
           echo "Pushing Meta Java SDK"
-          VERSION=${{ steps.version.outputs.version }}
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk.git
 
-          cp -r meta/gen/meta-api-sdk-java/* meta-api-sdk-java/
+          VERSION=${{ steps.version.outputs.version }}
+          
+          # Clone the repository
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-java.git
+
           cd meta-api-sdk-java
+          
+          # Configure git
           git config user.name github-actions
           git config user.email github-actions@github.com
 
+          # Copy generated files
+          cp -r meta/gen/meta-api-sdk-java/* .
+
+          # Add all files
           git add .
 
-          if git rev-parse --verify HEAD >/dev/null 2>&1; then
-            git commit -m "Sync Meta API Java SDK v$VERSION" || echo "No changes"
+          # Commit changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
           else
-            git commit -m "Initial commit: Sync Meta API Java SDK v$VERSION"
+            git commit -m "Sync Meta API Java SDK v$VERSION"
           fi
 
-          git tag v$VERSION || echo "tag exists"
+          # Create tag (ignore if already exists)
+          git tag v$VERSION 2>/dev/null || echo "Tag v$VERSION already exists"
 
-          # Handle push with proper merge strategy
-          if ! git show-ref --verify --quiet refs/remotes/origin/master; then
-            # No remote master branch, push to create it
-            git push origin HEAD:master --tags
-          else
-            # Remote master exists, try to push with merge
-            git pull origin master --allow-unrelated-histories || echo "Pull failed, continuing with push"
+          # Push changes and tags
+          git push origin master --tags || {
+            echo "Push failed, trying to pull and merge first"
+            git pull origin master --allow-unrelated-histories --no-edit || echo "Pull failed"
             git push origin master --tags || {
-              echo "Push failed, trying force push"
+              echo "Push still failed, trying force push"
               git push origin master --tags --force
             }
-          fi
+          }
 
           # Set environment variables for Maven authentication
           export GH_TOKEN=${{ secrets.GH_TOKEN }}
@@ -100,12 +107,17 @@ jobs:
         run: |
           echo "Pushing Meta Go SDK"
           VERSION=${{ steps.version.outputs.version }}
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-go.git
-
-          cp -r meta/gen/meta-api-sdk-go/* meta-api-sdk-go/
+          
+          # Clone the repository
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-go.git meta-api-sdk-go
           cd meta-api-sdk-go
+          
+          # Configure git
           git config user.name github-actions
           git config user.email github-actions@github.com
+
+          # Copy generated files
+          cp -r /meta/gen/meta-api-sdk-go/* .
 
           # Create go.mod if it doesn't exist
           if [ ! -f go.mod ]; then
@@ -132,28 +144,28 @@ jobs:
             echo '```' >> README.md
           fi
 
+          # Add all files
           git add .
 
-          if git rev-parse --verify HEAD >/dev/null 2>&1; then
-            git commit -m "Sync Meta API Go SDK v$VERSION" || echo "No changes"
+          # Commit changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
           else
-            git commit -m "Initial commit: Sync Meta API Go SDK v$VERSION"
+            git commit -m "Sync Meta API Go SDK v$VERSION"
           fi
 
-          git tag v$VERSION || echo "tag exists"
+          # Create tag (ignore if already exists)
+          git tag v$VERSION 2>/dev/null || echo "Tag v$VERSION already exists"
 
-          # Handle push with proper merge strategy
-          if ! git show-ref --verify --quiet refs/remotes/origin/master; then
-            # No remote master branch, push to create it
-            git push origin HEAD:master --tags
-          else
-            # Remote master exists, try to push with merge
-            git pull origin master --allow-unrelated-histories || echo "Pull failed, continuing with push"
+          # Push changes and tags
+          git push origin master --tags || {
+            echo "Push failed, trying to pull and merge first"
+            git pull origin master --allow-unrelated-histories --no-edit || echo "Pull failed"
             git push origin master --tags || {
-              echo "Push failed, trying force push"
+              echo "Push still failed, trying force push"
               git push origin master --tags --force
             }
-          fi
+          }
 
           # Set up Go module for publishing
           go mod tidy
