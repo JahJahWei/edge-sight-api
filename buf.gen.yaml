@@ -4,16 +4,18 @@ managed:
   enabled: true
 
 plugins:
-  - remote: buf.build/bufbuild/es
-    out: gen/alert-api-sdk-node
-
   - remote: buf.build/protocolbuffers/java
     out: gen/meta-api-sdk-java
+    strategy: directory
+    path: proto/meta
 
   - remote: buf.build/grpc/java
     out: gen/meta-api-sdk-java
+    strategy: directory
+    path: proto/meta
 
-inputs:
-  - directory: proto/meta
-  - directory: proto/alert
+  - remote: buf.build/bufbuild/es
+    out: gen/alert-api-sdk-node
+    strategy: directory
+    path: proto/alert
   
