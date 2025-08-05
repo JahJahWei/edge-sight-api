@@ -6,20 +6,20 @@ managed:
 plugins:
   - remote: buf.build/grpc/js
     out: gen/alert-api-sdk-node
-    proto_file: proto/alert/v1/alert.proto
     opt: import_style=commonjs,binary
 
   - remote: buf.build/grpc/ts
     out: gen/alert-api-sdk-node
-    proto_file: proto/alert/v1/alert.proto
     opt: import_style=commonjs,binary
 
   - remote: buf.build/protocolbuffers/java
     out: gen/meta-api-sdk-java
-    proto_file: proto/meta/v1/meta.proto
     opt: java_multiple_files=true
 
   - remote: buf.build/grpc/java
-    out: gen/meta-api-sdk-java
-    proto_file: proto/meta/v1/meta.proto
     opt: java_multiple_files=true
+
+inputs:
+  - directory: proto/meta
+  - directory: proto/alert
+  
