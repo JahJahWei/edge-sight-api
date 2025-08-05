@@ -1,12 +1,5 @@
 version: v2
 
-modules:
-  - path: proto/meta
-    name: github.com/jahjah/meta
-  
-  - path: proto/alert
-    name: github.com/jahjah/alert
-
 breaking:
   use:
     - FILE
