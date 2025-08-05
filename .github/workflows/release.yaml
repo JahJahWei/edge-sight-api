@@ -27,6 +27,23 @@ jobs:
           curl -sSL https://github.com/bufbuild/buf/releases/latest/download/buf-$(uname -s)-$(uname -m) -o /usr/local/bin/buf
           chmod +x /usr/local/bin/buf
       
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://npm.pkg.github.com"
+      
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
+      
       - name: Generate Meta SDK
         run: |
           echo "Generating Meta SDK"
@@ -87,7 +104,7 @@ jobs:
           if [ ! -f go.mod ]; then
             echo 'module github.com/JahJahWei/meta-api-sdk-go' > go.mod
             echo '' >> go.mod
-            echo 'go 1.21' >> go.mod
+            echo 'go 1.24' >> go.mod
             echo '' >> go.mod
             echo 'require (' >> go.mod
             echo '	google.golang.org/grpc v1.59.0' >> go.mod
