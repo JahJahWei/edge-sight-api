@@ -11,10 +11,12 @@ service MetaService {
   // 病区一览
   rpc GetBeds(GetBedsRequest) returns (GetBedsResponse) {}
   rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse) {}
+  rpc Analysis(AnalysisRequest) returns (AnalysisResponse) {}
 
   // 输液管理
   rpc GetInfusionDevices(GetInfusionDevicesRequest)
       returns (GetInfusionDevicesResponse) {}
+
 }
 
 message GetBedsRequest {
@@ -42,6 +44,17 @@ message GetAlertsRequest {
 }
 
 message GetAlertsResponse { repeated AlertDetail alerts = 1; }
+
+message AnalysisRequest {
+  int32 deptId = 1;
+}
+
+message AnalysisResponse {
+  //入住人数
+  int32 inBed = 1;
+  //空闲人数
+  int32 freeBed = 2;
+}
 
 message AlertDetail {
   int32 alertId = 1;
