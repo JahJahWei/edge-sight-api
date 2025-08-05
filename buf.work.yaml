@@ -1,5 +1,0 @@
-version: v2
-
-directories:
-  - proto/meta
-  - proto/alert
