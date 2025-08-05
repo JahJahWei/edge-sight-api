@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package alert.v1;
 
+option go_package = "github.com/jahjah/alert-go-sdk/v1;alert";
+
 service AlertService {
   rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse) {}
   rpc AlertCount(AlertCountRequest) returns (AlertCountResponse) {}

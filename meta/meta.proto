@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package meta.v1;
 
-option go_package = "github.com/jahjah/edge-sight-go-sdk;metav1";
+option go_package = "github.com/jahjah/meta-go-sdk/v1;meta";
 
 service MetaService {
   // 用户
@@ -16,7 +16,6 @@ service MetaService {
   // 输液管理
   rpc GetInfusionDevices(GetInfusionDevicesRequest)
       returns (GetInfusionDevicesResponse) {}
-
 }
 
 message GetBedsRequest {
@@ -45,14 +44,12 @@ message GetAlertsRequest {
 
 message GetAlertsResponse { repeated AlertDetail alerts = 1; }
 
-message AnalysisRequest {
-  int32 deptId = 1;
-}
+message AnalysisRequest { int32 deptId = 1; }
 
 message AnalysisResponse {
-  //入住人数
+  // 入住人数
   int32 inBed = 1;
-  //空闲人数
+  // 空闲人数
   int32 freeBed = 2;
 }
 

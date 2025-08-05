@@ -4,14 +4,12 @@ managed:
   enabled: true
 
 plugins:
-  # Java SDK
   - remote: buf.build/protocolbuffers/java
     out: gen/meta-api-sdk-java
 
   - remote: buf.build/grpc/java
     out: gen/meta-api-sdk-java
 
-  # Go SDK
   - remote: buf.build/protocolbuffers/go
     out: gen/meta-api-sdk-go
 
