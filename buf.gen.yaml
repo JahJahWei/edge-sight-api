@@ -17,6 +17,7 @@ plugins:
     opt: java_multiple_files=true
 
   - remote: buf.build/grpc/java
+    out: gen/meta-api-sdk-java
     opt: java_multiple_files=true
 
 inputs:
