@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package analysis.v1;
+
+service AnalysisService {
+    //在床统计
+    rpc InBedCount(InOutBedRequest) returns (InOutBedResponse) {}
+    //离床统计
+    rpc OutBedCount(InOutBedRequest) returns (InOutBedResponse) {}
+    //睡眠人数统计
+    rpc UserSleepCount(UserSleepCountRequest) returns (UserSleepCountResponse) {}
+    //清醒人数统计
+    rpc AwakeCount(AwakeCountRequest) returns (AwakeCountResponse) {}
+    //呼吸比监测
+    rpc BreathingRatioCount(BreathingRatioCountRequest) returns (BreathingRatioCountResponse) {}
+    //体动指数
+    rpc UserMotionCount(UserMotionCountRequest) returns (UserMotionCountResponse) {}
+    //睡眠监测
+    rpc SleepCount(SleepCountRequest) returns (SleepCountResponse) {}
+    
+    //心率统计
+    rpc HeartRateCount(HeartRateCountRequest) returns (HeartRateCountResponse) {}
+}
+
+message AnalysisRequest {
+    int32 deptId = 1;
+}
