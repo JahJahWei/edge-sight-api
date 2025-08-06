@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 jobs:
-  generate-and-publish:
+  generate-and-publish-meta-sdk:
     runs-on: ubuntu-latest
 
     steps:
@@ -85,29 +85,25 @@ jobs:
             exit 1
           fi
 
-          # Add all files
           git add .
 
-          # Commit changes
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
+          if git rev-parse --verify HEAD >/dev/null 2>&1; then
+            git commit -m "Sync Meta API Java SDK v$VERSION" || echo "No changes"
           else
-            git commit -m "Sync Meta API Java SDK v${VERSION}"
+            git commit -m "Initial commit: Sync Meta API Java SDK v$VERSION"
           fi
 
-          # Create tag (ignore if already exists)
-          git tag "v${VERSION}" 2>/dev/null || echo "Tag v${VERSION} already exists"
+          git tag v$VERSION || echo "tag exists"
 
-          # Push changes and tags
-          echo "Pushing changes to repository..."
-          git push origin master --tags || {
-            echo "Push failed, trying to pull and merge first"
-            git pull origin master --allow-unrelated-histories --no-edit || echo "Pull failed"
-            git push origin master --tags || {
-              echo "Push still failed, trying force push"
-              git push origin master --tags --force
-            }
-          }
+          if ! git show-ref --verify --quiet refs/remotes/origin/master; then
+            git push origin HEAD:master --tags
+          else
+            git push origin master --tags
+          fi
+
+          # Set environment variables for Maven authentication
+          export GH_TOKEN=${{ secrets.GH_TOKEN }}
+          export GITHUB_ACTOR=${{ github.actor }}
 
           # Deploy to Maven repository
           echo "Deploying to Maven repository..."
@@ -174,6 +170,35 @@ jobs:
           # Create a release for GitHub Packages
           gh release create v$VERSION --generate-notes --repo JahJahWei/meta-api-sdk-go || echo "Release already exists"
       
+
+  
+  generate-and-publish-alert-sdk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout API Repo
+        uses: actions/checkout@v4
+
+      - name: Extract Version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Install Buf
+        run: |
+          echo "Installing Buf"
+          curl -sSL https://github.com/bufbuild/buf/releases/latest/download/buf-$(uname -s)-$(uname -m) -o /usr/local/bin/buf
+          chmod +x /usr/local/bin/buf
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://npm.pkg.github.com"
+      
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
 
       - name: Generate Alert SDK
         run: |
@@ -256,5 +281,4 @@ jobs:
 
           # Create a release for GitHub Packages
           gh release create v$VERSION --generate-notes --repo JahJahWei/alert-api-sdk-go || echo "Release already exists"
-
 
