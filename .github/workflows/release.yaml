@@ -119,91 +119,142 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
         run: |
           echo "Pushing Meta Go SDK"
-          
-          # Define variables
           VERSION=${{ steps.version.outputs.version }}
-          REPO_NAME="meta-api-sdk-go"
-          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/JahJahWei/${REPO_NAME}.git"
-          SOURCE_DIR="meta/gen/${REPO_NAME}"
-          
-          # Clone the repository
-          echo "Cloning ${REPO_NAME} repository..."
-          git clone "${REPO_URL}" "${REPO_NAME}"
-          cd "${REPO_NAME}"
-          
-          # Configure git
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-go.git
+
+          cp -r gen/meta-api-sdk-go/* meta-api-sdk-go/
+          cd meta-api-sdk-go
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-          # Copy generated files
-          echo "Copying generated files from ${SOURCE_DIR}..."
-          if [ -d "../${SOURCE_DIR}" ]; then
-            cp -r "../${SOURCE_DIR}"/* .
-          else
-            echo "Error: Source directory ../${SOURCE_DIR} not found!"
-            exit 1
-          fi
-
           # Create go.mod if it doesn't exist
           if [ ! -f go.mod ]; then
-            echo "Creating go.mod file..."
-            cat > go.mod << EOF
-module github.com/JahJahWei/meta-api-sdk-go
-
-go 1.24
-
-require (
-	google.golang.org/grpc v1.59.0
-	google.golang.org/protobuf v1.31.0
-)
-EOF
+            echo 'module github.com/JahJahWei/meta-api-sdk-go' > go.mod
+            echo '' >> go.mod
+            echo 'go 1.21' >> go.mod
+            echo '' >> go.mod
+            echo 'require (' >> go.mod
+            echo '	google.golang.org/grpc v1.59.0' >> go.mod
+            echo '	google.golang.org/protobuf v1.31.0' >> go.mod
+            echo ')' >> go.mod
           fi
 
           # Create README.md if it doesn't exist
           if [ ! -f README.md ]; then
-            echo "Creating README.md file..."
-            cat > README.md << EOF
-# Meta API Go SDK
-
-Go SDK for Meta API generated from Protocol Buffers.
-
-## Installation
-
-\`\`\`bash
-go get github.com/JahJahWei/meta-api-sdk-go@v${VERSION}
-\`\`\`
-EOF
+            echo '# Meta API Go SDK' > README.md
+            echo '' >> README.md
+            echo 'Go SDK for Meta API generated from Protocol Buffers.' >> README.md
+            echo '' >> README.md
+            echo '## Installation' >> README.md
+            echo '' >> README.md
+            echo '```bash' >> README.md
+            echo 'go get github.com/JahJahWei/meta-api-sdk-go@v'$VERSION >> README.md
+            echo '```' >> README.md
           fi
 
-          # Add all files
           git add .
 
-          # Commit changes
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
+          if git rev-parse --verify HEAD >/dev/null 2>&1; then
+            git commit -m "Sync Meta API Go SDK v$VERSION" || echo "No changes"
           else
-            git commit -m "Sync Meta API Go SDK v${VERSION}"
+            git commit -m "Initial commit: Sync Meta API Go SDK v$VERSION"
           fi
 
-          # Create tag (ignore if already exists)
-          git tag "v${VERSION}" 2>/dev/null || echo "Tag v${VERSION} already exists"
+          git tag v$VERSION || echo "tag exists"
 
-          # Push changes and tags
-          echo "Pushing changes to repository..."
-          git push origin master --tags || {
-            echo "Push failed, trying to pull and merge first"
-            git pull origin master --allow-unrelated-histories --no-edit || echo "Pull failed"
-            git push origin master --tags || {
-              echo "Push still failed, trying force push"
-              git push origin master --tags --force
-            }
-          }
+          if ! git show-ref --verify --quiet refs/remotes/origin/master; then
+            git push origin HEAD:master --tags
+          else
+            git push origin master --tags
+          fi
 
           # Set up Go module for publishing
-          echo "Setting up Go module..."
           go mod tidy
           
           # Create a release for GitHub Packages
-          echo "Creating GitHub release..."
-          gh release create "v${VERSION}" --generate-notes --repo "JahJahWei/${REPO_NAME}" || echo "Release already exists"
+          gh release create v$VERSION --generate-notes --repo JahJahWei/meta-api-sdk-go || echo "Release already exists"
+      
+
+      - name: Generate Alert SDK
+        run: |
+          echo "Generating Alert SDK"
+          cd alert
+          buf generate
+
+      - name: Push Alert API Node.js SDK
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Pushing Alert API Node.js SDK"
+          VERSION=${{ steps.version.outputs.version }}
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/alert-api-sdk-node.git
+
+          cp -r gen/alert-api-sdk-node/* alert-api-sdk-node/
+          cd alert-api-sdk-node
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          # Create package.json if it doesn't exist
+          if [ ! -f package.json ]; then
+            echo '{"name":"@jahjahwei/alert-api-sdk","version":"'$VERSION'","description":"Node.js SDK for Alert API","main":"index.js","types":"index.d.ts","scripts":{"test":"echo \"Error: no test specified\" && exit 1"},"keywords":["grpc","protobuf","api","sdk","alert"],"author":"JahJahWei","license":"MIT","dependencies":{"@grpc/grpc-js":"^1.9.0","@grpc/proto-loader":"^0.7.0","google-protobuf":"^3.21.0"},"devDependencies":{"@types/node":"^18.0.0"},"repository":{"type":"git","url":"git+https://github.com/JahJahWei/alert-api-sdk-node.git"},"bugs":{"url":"https://github.com/JahJahWei/alert-api-sdk-node/issues"},"homepage":"https://github.com/JahJahWei/alert-api-sdk-node#readme"}' > package.json
+          fi
+
+          # Update version in package.json
+          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
+
+          git add .
+
+          if git rev-parse --verify HEAD >/dev/null 2>&1; then
+            git commit -m "Sync Alert API Node.js SDK v$VERSION" || echo "No changes"
+          else
+            git commit -m "Initial commit: Sync Alert API Node.js SDK v$VERSION"
+          fi
+
+          git tag v$VERSION || echo "tag exists"
+
+          if ! git show-ref --verify --quiet refs/remotes/origin/master; then
+            git push origin HEAD:master --tags
+          else
+            git push origin master --tags
+          fi
+
+          # Publish to GitHub Packages (npm)
+          npm publish
+
+      - name: Push Alert API Go SDK
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          echo "Pushing Alert API Go SDK"
+          VERSION=${{ steps.version.outputs.version }}
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/alert-api-sdk-go.git
+
+          cp -r gen/alert-api-sdk-go/* alert-api-sdk-go/
+          cd alert-api-sdk-go
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add .
+
+          if git rev-parse --verify HEAD >/dev/null 2>&1; then
+            git commit -m "Sync Alert API Go SDK v$VERSION" || echo "No changes"
+          else
+            git commit -m "Initial commit: Sync Alert API Go SDK v$VERSION"
+          fi
+
+          git tag v$VERSION || echo "tag exists"
+
+          if ! git show-ref --verify --quiet refs/remotes/origin/master; then
+            git push origin HEAD:master --tags
+          else
+            git push origin master --tags
+          fi
+
+          # Set up Go module for publishing
+          go mod tidy
+
+          # Create a release for GitHub Packages
+          gh release create v$VERSION --generate-notes --repo JahJahWei/alert-api-sdk-go || echo "Release already exists"
+
 
