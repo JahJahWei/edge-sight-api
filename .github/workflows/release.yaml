@@ -62,7 +62,7 @@ jobs:
           # Clone the repository
           git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-java.git
 
-          cd meta-api-sdk-java
+          cd meta-api-sdk-java/src/main/java
           
           # Configure git
           git config user.name github-actions
