@@ -56,20 +56,34 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
         run: |
           echo "Pushing Meta Java SDK"
-
+          
+          # Define variables
           VERSION=${{ steps.version.outputs.version }}
+          REPO_NAME="meta-api-sdk-java"
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/JahJahWei/${REPO_NAME}.git"
+          SOURCE_DIR="meta/gen/${REPO_NAME}"
           
           # Clone the repository
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-java.git
-
-          cd meta-api-sdk-java/src/main/java
+          echo "Cloning ${REPO_NAME} repository..."
+          git clone "${REPO_URL}"
+          cd "${REPO_NAME}"
           
           # Configure git
           git config user.name github-actions
           git config user.email github-actions@github.com
 
+          # Clean existing generated files (optional, for clean state)
+          echo "Cleaning existing generated files..."
+          rm -rf src/main/java/* 2>/dev/null || true
+          
           # Copy generated files
-          cp -r ../../../meta/gen/meta-api-sdk-java/* .
+          echo "Copying generated files from ${SOURCE_DIR}..."
+          if [ -d "../${SOURCE_DIR}" ]; then
+            cp -r "../${SOURCE_DIR}"/* src/main/java/
+          else
+            echo "Error: Source directory ../${SOURCE_DIR} not found!"
+            exit 1
+          fi
 
           # Add all files
           git add .
@@ -78,13 +92,14 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Sync Meta API Java SDK v$VERSION"
+            git commit -m "Sync Meta API Java SDK v${VERSION}"
           fi
 
           # Create tag (ignore if already exists)
-          git tag v$VERSION 2>/dev/null || echo "Tag v$VERSION already exists"
+          git tag "v${VERSION}" 2>/dev/null || echo "Tag v${VERSION} already exists"
 
           # Push changes and tags
+          echo "Pushing changes to repository..."
           git push origin master --tags || {
             echo "Push failed, trying to pull and merge first"
             git pull origin master --allow-unrelated-histories --no-edit || echo "Pull failed"
@@ -94,10 +109,8 @@ jobs:
             }
           }
 
-          # Set environment variables for Maven authentication
-          export GH_TOKEN=${{ secrets.GH_TOKEN }}
-          export GITHUB_ACTOR=${{ github.actor }}
-
+          # Deploy to Maven repository
+          echo "Deploying to Maven repository..."
           mvn clean deploy -DskipTests -s settings.xml
       
       - name: Push Meta Go SDK
@@ -106,42 +119,60 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
         run: |
           echo "Pushing Meta Go SDK"
+          
+          # Define variables
           VERSION=${{ steps.version.outputs.version }}
+          REPO_NAME="meta-api-sdk-go"
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/JahJahWei/${REPO_NAME}.git"
+          SOURCE_DIR="meta/gen/${REPO_NAME}"
           
           # Clone the repository
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-go.git meta-api-sdk-go
-          cd meta-api-sdk-go
+          echo "Cloning ${REPO_NAME} repository..."
+          git clone "${REPO_URL}" "${REPO_NAME}"
+          cd "${REPO_NAME}"
           
           # Configure git
           git config user.name github-actions
           git config user.email github-actions@github.com
 
           # Copy generated files
-          cp -r ../meta/gen/meta-api-sdk-go/* .
+          echo "Copying generated files from ${SOURCE_DIR}..."
+          if [ -d "../${SOURCE_DIR}" ]; then
+            cp -r "../${SOURCE_DIR}"/* .
+          else
+            echo "Error: Source directory ../${SOURCE_DIR} not found!"
+            exit 1
+          fi
 
           # Create go.mod if it doesn't exist
           if [ ! -f go.mod ]; then
-            echo 'module github.com/JahJahWei/meta-api-sdk-go' > go.mod
-            echo '' >> go.mod
-            echo 'go 1.24' >> go.mod
-            echo '' >> go.mod
-            echo 'require (' >> go.mod
-            echo '	google.golang.org/grpc v1.59.0' >> go.mod
-            echo '	google.golang.org/protobuf v1.31.0' >> go.mod
-            echo ')' >> go.mod
+            echo "Creating go.mod file..."
+            cat > go.mod << EOF
+module github.com/JahJahWei/meta-api-sdk-go
+
+go 1.24
+
+require (
+	google.golang.org/grpc v1.59.0
+	google.golang.org/protobuf v1.31.0
+)
+EOF
           fi
 
           # Create README.md if it doesn't exist
           if [ ! -f README.md ]; then
-            echo '# Meta API Go SDK' > README.md
-            echo '' >> README.md
-            echo 'Go SDK for Meta API generated from Protocol Buffers.' >> README.md
-            echo '' >> README.md
-            echo '## Installation' >> README.md
-            echo '' >> README.md
-            echo '```bash' >> README.md
-            echo 'go get github.com/JahJahWei/meta-api-sdk-go@v'$VERSION >> README.md
-            echo '```' >> README.md
+            echo "Creating README.md file..."
+            cat > README.md << EOF
+# Meta API Go SDK
+
+Go SDK for Meta API generated from Protocol Buffers.
+
+## Installation
+
+\`\`\`bash
+go get github.com/JahJahWei/meta-api-sdk-go@v${VERSION}
+\`\`\`
+EOF
           fi
 
           # Add all files
@@ -151,13 +182,14 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Sync Meta API Go SDK v$VERSION"
+            git commit -m "Sync Meta API Go SDK v${VERSION}"
           fi
 
           # Create tag (ignore if already exists)
-          git tag v$VERSION 2>/dev/null || echo "Tag v$VERSION already exists"
+          git tag "v${VERSION}" 2>/dev/null || echo "Tag v${VERSION} already exists"
 
           # Push changes and tags
+          echo "Pushing changes to repository..."
           git push origin master --tags || {
             echo "Push failed, trying to pull and merge first"
             git pull origin master --allow-unrelated-histories --no-edit || echo "Pull failed"
@@ -168,8 +200,10 @@ jobs:
           }
 
           # Set up Go module for publishing
+          echo "Setting up Go module..."
           go mod tidy
           
           # Create a release for GitHub Packages
-          gh release create v$VERSION --generate-notes --repo JahJahWei/meta-api-sdk-go || echo "Release already exists"
+          echo "Creating GitHub release..."
+          gh release create "v${VERSION}" --generate-notes --repo "JahJahWei/${REPO_NAME}" || echo "Release already exists"
 
