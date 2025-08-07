@@ -32,12 +32,6 @@ jobs:
         with:
           java-version: "21"
           distribution: "temurin"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          registry-url: "https://npm.pkg.github.com"
       
       - name: Setup go
         uses: actions/setup-go@v4
@@ -115,37 +109,31 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
         run: |
           echo "Pushing Meta Go SDK"
-          VERSION=${{ steps.version.outputs.version }}
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/JahJahWei/meta-api-sdk-go.git
 
-          cp -r gen/meta-api-sdk-go/* meta-api-sdk-go/
-          cd meta-api-sdk-go
+          VERSION=${{ steps.version.outputs.version }}
+          REPO_NAME="meta-api-sdk-go"
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/JahJahWei/${REPO_NAME}.git"
+          SOURCE_DIR="meta/gen/${REPO_NAME}"
+
+          # Clone the repository
+          echo "Cloning ${REPO_NAME} repository..."
+          git clone "${REPO_URL}"
+          cd "${REPO_NAME}"
+
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-          # Create go.mod if it doesn't exist
-          if [ ! -f go.mod ]; then
-            echo 'module github.com/JahJahWei/meta-api-sdk-go' > go.mod
-            echo '' >> go.mod
-            echo 'go 1.21' >> go.mod
-            echo '' >> go.mod
-            echo 'require (' >> go.mod
-            echo '	google.golang.org/grpc v1.59.0' >> go.mod
-            echo '	google.golang.org/protobuf v1.31.0' >> go.mod
-            echo ')' >> go.mod
-          fi
-
-          # Create README.md if it doesn't exist
-          if [ ! -f README.md ]; then
-            echo '# Meta API Go SDK' > README.md
-            echo '' >> README.md
-            echo 'Go SDK for Meta API generated from Protocol Buffers.' >> README.md
-            echo '' >> README.md
-            echo '## Installation' >> README.md
-            echo '' >> README.md
-            echo '```bash' >> README.md
-            echo 'go get github.com/JahJahWei/meta-api-sdk-go@v'$VERSION >> README.md
-            echo '```' >> README.md
+          # Clean existing generated files (optional, for clean state)
+          echo "Cleaning existing generated files..."
+          rm -rf github.com/JahJahWei/meta-api-sdk-go/v1/* 2>/dev/null || true
+          
+          # Copy generated files
+          echo "Copying generated files from ${SOURCE_DIR}..."
+          if [ -d "../${SOURCE_DIR}" ]; then
+            cp -r "../${SOURCE_DIR}"/* github.com/JahJahWei/meta-api-sdk-go/v1/
+          else
+            echo "Error: Source directory ../${SOURCE_DIR} not found!"
+            exit 1
           fi
 
           git add .
@@ -170,7 +158,6 @@ jobs:
           # Create a release for GitHub Packages
           gh release create v$VERSION --generate-notes --repo JahJahWei/meta-api-sdk-go || echo "Release already exists"
       
-
   
   generate-and-publish-alert-sdk:
     runs-on: ubuntu-latest

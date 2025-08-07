@@ -10,7 +10,6 @@ service MetaService {
 
   // 病区一览
   rpc GetBeds(GetBedsRequest) returns (GetBedsResponse) {}
-  rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse) {}
   rpc Analysis(AnalysisRequest) returns (AnalysisResponse) {}
 
   // 输液管理
@@ -29,20 +28,12 @@ message GetBedsResponse { repeated BedDetail beds = 1; }
 message BedDetail {
   int32 bedId = 1;
   string bedNo = 2;
-  string patientName = 3;
-  string patientGender = 4;
-  int32 patientAge = 5;
-  string disease = 6;
-  string status = 7;
+  string deviceNo = 3;
+  string patientName = 4;
+  string patientGender = 5;
+  int32 patientAge = 6;
+  string disease = 7;
 }
-
-message GetAlertsRequest {
-  int32 page = 1;
-  int32 pageSize = 2;
-  int32 deptId = 3;
-}
-
-message GetAlertsResponse { repeated AlertDetail alerts = 1; }
 
 message AnalysisRequest { int32 deptId = 1; }
 
@@ -74,8 +65,6 @@ message InfusionDeviceDetail {
   string bedNo = 1;
   repeated DrugDetail drugs = 2;
   string disease = 3;
-  string infusionTime = 4;
-  string infusionStatus = 5;
 }
 
 message DrugDetail {
@@ -85,9 +74,7 @@ message DrugDetail {
 
 message GetUserRequest { int32 userId = 1; }
 
-message GetUserResponse { UserDetail user = 1; }
-
-message UserDetail {
+message GetUserResponse { 
   int32 userId = 1;
   string userName = 2;
   string userRole = 3;
